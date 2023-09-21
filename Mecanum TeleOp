@@ -1,0 +1,105 @@
+//Controller period
+
+package org.firstinspires.ftc.teamcode;
+
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.Range;
+
+
+@TeleOp(name="Mecanum: Teleop", group="Mecanum")
+public class MecanumTeleop extends OpMode {
+
+    DcMotor leftFront = null;
+    DcMotor rightFront = null;
+    DcMotor leftRear = null;
+    DcMotor rightRear = null;
+    DcMotor arm = null;
+
+    @Override
+    public void init() {
+
+
+        // Define and Initialize Motors (note: need to use reference to actual OpMode).
+        leftFront  = hardwareMap.get(DcMotor.class, "leftFront");
+        rightFront = hardwareMap.get(DcMotor.class, "rightFront");
+        leftRear   = hardwareMap.get(DcMotor.class, "leftRear");
+        rightRear  = hardwareMap.get(DcMotor.class, "rightRear");
+        arm  = hardwareMap.get(DcMotor.class, "arm");
+
+
+        rightRear.setDirection(DcMotor.Direction.REVERSE);
+        rightFront.setDirection(DcMotor.Direction.REVERSE);
+        leftRear.setDirection(DcMotor.Direction.FORWARD);
+        leftFront.setDirection(DcMotor.Direction.FORWARD);
+
+    }
+
+    @Override
+    public void loop() {
+
+        double spin = gamepad1.right_stick_x;
+
+        if (Math.abs(spin) > 0.1) {
+            //if someone is moving the right joystick spin
+            rightFront.setPower(-spin);
+            rightRear.setPower(-spin);
+            leftFront.setPower(spin);
+            leftRear.setPower(spin);
+        }
+
+        double x1; // left/right
+        double y1; // forward/backward
+
+        double fortyFiveInRads= -Math.PI/4;
+        double cosine45 = Math.cos(fortyFiveInRads);
+        double sine45 = Math.sin(fortyFiveInRads);
+
+        double x2;
+        double y2;
+
+
+        // Run wheels in POV mode (note: The joystick goes negative when pushed forward, so negate it)
+        // In this mode the Left stick moves the robot fwd and back, the Right stick turns left and right.
+        // This way it's also easy to just drive straight, or just turn.
+        y1 = -gamepad1.left_stick_y;
+        x1  =  gamepad1.left_stick_x;
+
+        //need to rotate 45 degrees
+        y2 = y1*cosine45 + x1*sine45;
+        x2 = x1*cosine45 - y1*sine45;
+        // Wait for the game to start (driver presses PLAY)
+
+        // Output the safe vales to the motor drives.
+        leftFront.setPower(x2);
+        rightFront.setPower(y2);
+
+        leftRear.setPower(y2);
+        rightRear.setPower(x2);
+
+        // Send telemetry message to signify robot running;
+        telemetry.addData("x1",  "%.2f", x1);
+        telemetry.addData("y1",  "%.2f", y1);
+        telemetry.addData("x2",  "%.2f", x2);
+        telemetry.addData("y2",  "%.2f", y2);
+        telemetry.update();
+
+        if (gamepad1.dpad_up){
+            arm.setPower(.6);
+        }
+        if (gamepad1.dpad_down){
+            arm.setPower(-.05);
+        }
+        if (gamepad1.dpad_left){
+            arm.setPower(0);
+        }
+        if (gamepad1.dpad_right){
+            arm.setPower(0);
+        }
+    }
+
+}
